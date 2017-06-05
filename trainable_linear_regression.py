@@ -1,4 +1,4 @@
-#！/usr/bin/env python
+#!/usr/bin/env python
 import tensorflow as tf
 import numpy as np
 
