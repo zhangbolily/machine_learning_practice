@@ -10,26 +10,26 @@ x_input = np.random.random_sample(200)
 y_input = x_input * 20 + 6
 
 # Parameter layer of model
-with tf.name_scope('Parameter layer'):
+with tf.name_scope('Parameter_Layer'):
     W = tf.Variable([.5], name='Weights')
     b = tf.Variable([.6], name='Bias')
 
 # Input layer of model
-with tf.name_scope('Input Layer'):
+with tf.name_scope('Input_Layer'):
     x_data = tf.placeholder(tf.float16, name='X Input')
     linear_model = tf.multiply(W, x_data, name='W * x') + b
 
 # Output layer of model
-with tf.name_scope('Output Layer'):
+with tf.name_scope('Output_Layer'):
     y_data = tf.placeholder(tf.float16, name='Y Output')
 
 # Evaluation layer of model
-with tf.name_scope('Evaluation Layer'):
+with tf.name_scope('Evaluation_Layer'):
     squared_deltas = tf.square(linear_model - y_data, name='Squared deltas')
     loss = tf.reduce_sum(squared_deltas)
 
 # Train layer of mode
-with tf.name_scope('Evaluation Layer'):
+with tf.name_scope('Evaluation_Layer'):
     optimizer = tf.train.GradientDescentOptimizer(0.2, name='Learning speed 0.2')
     train = optimizer.minimize(loss, name='Minimize loss')
 
