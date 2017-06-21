@@ -39,6 +39,6 @@ init = tf.global_variables_initializer()
 
 sess.run(init)
 for i in range(500):
-    sess.run(train, x_input, y_input)
+    sess.run(train, {x_data:x_input, y_data:y_input})
 
 print(sess.run([W, b]))
