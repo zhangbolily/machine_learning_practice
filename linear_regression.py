@@ -16,12 +16,12 @@ with tf.name_scope('Parameter_Layer'):
 
 # Input layer of model
 with tf.name_scope('Input_Layer'):
-    x_data = tf.placeholder(tf.float16, name='X_Input')
+    x_data = tf.placeholder(tf.float32, name='X_Input')
     linear_model = tf.multiply(W, x_data, name='W_mul_x') + b
 
 # Output layer of model
 with tf.name_scope('Output_Layer'):
-    y_data = tf.placeholder(tf.float16, name='Y_Output')
+    y_data = tf.placeholder(tf.float32, name='Y_Output')
 
 # Evaluation layer of model
 with tf.name_scope('Evaluation_Layer'):
