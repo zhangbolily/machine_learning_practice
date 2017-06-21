@@ -17,7 +17,7 @@ with tf.name_scope('Parameter_Layer'):
 # Input layer of model
 with tf.name_scope('Input_Layer'):
     x_data = tf.placeholder(tf.float16, name='X_Input')
-    linear_model = tf.multiply(W, x_data, name='W*x') + b
+    linear_model = tf.multiply(W, x_data, name='W_mul_x') + b
 
 # Output layer of model
 with tf.name_scope('Output_Layer'):
@@ -30,7 +30,7 @@ with tf.name_scope('Evaluation_Layer'):
 
 # Train layer of mode
 with tf.name_scope('Evaluation_Layer'):
-    optimizer = tf.train.GradientDescentOptimizer(0.2, name='Learning_speed_0.2')
+    optimizer = tf.train.GradientDescentOptimizer(0.2, name='Learning_speed')
     train = optimizer.minimize(loss, name='Minimize_loss')
 
 merged = tf.summary.merge_all()
