@@ -16,22 +16,22 @@ with tf.name_scope('Parameter_Layer'):
 
 # Input layer of model
 with tf.name_scope('Input_Layer'):
-    x_data = tf.placeholder(tf.float16, name='X Input')
-    linear_model = tf.multiply(W, x_data, name='W * x') + b
+    x_data = tf.placeholder(tf.float16, name='X_Input')
+    linear_model = tf.multiply(W, x_data, name='W*x') + b
 
 # Output layer of model
 with tf.name_scope('Output_Layer'):
-    y_data = tf.placeholder(tf.float16, name='Y Output')
+    y_data = tf.placeholder(tf.float16, name='Y_Output')
 
 # Evaluation layer of model
 with tf.name_scope('Evaluation_Layer'):
-    squared_deltas = tf.square(linear_model - y_data, name='Squared deltas')
+    squared_deltas = tf.square(linear_model - y_data, name='Squared_deltas')
     loss = tf.reduce_sum(squared_deltas)
 
 # Train layer of mode
 with tf.name_scope('Evaluation_Layer'):
-    optimizer = tf.train.GradientDescentOptimizer(0.2, name='Learning speed 0.2')
-    train = optimizer.minimize(loss, name='Minimize loss')
+    optimizer = tf.train.GradientDescentOptimizer(0.2, name='Learning_speed_0.2')
+    train = optimizer.minimize(loss, name='Minimize_loss')
 
 merged = tf.summary.merge_all()
 file_writer = tf.summary.FileWriter('/tmp/tensorflow/linear_regression', sess.graph)
