@@ -9,6 +9,11 @@ import numpy as np
 import os
 
 PROJECT_DIR = "/home/ballchang/PycharmProjects/machine_learning_practice/MNIST_data"
+mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
+
+gray = 0.2
+test_count = 20000
+k = 3
 
 def variable_summaries(var):
     """Attach a lot of summaries to a Tensor (for TensorBoard visualization)."""
@@ -22,9 +27,6 @@ def variable_summaries(var):
         tf.summary.scalar('min', tf.reduce_min(var))
         tf.summary.histogram('histogram', var)
 
-mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
-
-
 # First, I want to create a data set to evaluate the input data.
 # This data set based on MNIST data set.The structure of the data set is
 # a three dimension array.
@@ -34,30 +36,34 @@ mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 #          :"num" is the type of number.
 #          :"data" is the data of number image.
 
-def construct_data_set():
-    scale = 10000
 
-    _data_set_ = np.zeros((scale, 784))
-    _label_set_ = np.zeros((scale, 10))
+def construct_data_set():
+    scale = 20000
+
+    _data_set_ = np.zeros((scale, 784), dtype=int)
+    _label_set_ = np.zeros((scale, 10), dtype=int)
     _data_temp_ = np.zeros(784, dtype=int)
 
-    if os.path.isfile(PROJECT_DIR + "/mnist_data_in_bit.data") == 1:
-        if os.path.isfile(PROJECT_DIR + "/mnist_label_in_bit.data") == 1:
-            batch_data = np.loadtxt(PROJECT_DIR + "/mnist_data_in_bit.data")
-            batch_label = np.loadtxt(PROJECT_DIR + "/mnist_label_in_bit.data")
+    # If data files already exist, just load them.
+    if os.path.isfile(PROJECT_DIR + "/mnist_data_binary.npy") == 1:
+        if os.path.isfile(PROJECT_DIR + "/mnist_label_binary.npy") == 1:
+            batch_data = np.load(PROJECT_DIR + "/mnist_data_binary.npy")
+            batch_label = np.load(PROJECT_DIR + "/mnist_label_binary.npy")
             _data_set_ = np.reshape(batch_data, (scale, 784))
             _label_set_ = np.reshape(batch_label, (scale, 10))
             print("[Function Message]In construct_data_set(): Read samples from files for testing.\n")
             return _data_set_, _label_set_
 
+    # Read data from MNIST
     batch_data, batch_label = mnist.train.next_batch(55000)
 
+    # Binarizing data set
     k = 0
     for i in range(10):
         for j in range(55000):
             if batch_label[j, i] == 1 and k < (scale/10*(i + 1)):
                 for l in range(784):
-                    _data_temp_[l] = 1 if batch_data[j, l] > 0.8 else 0
+                    _data_temp_[l] = 1 if batch_data[j, l] > gray else 0
 
                 # print(_data_temp_.reshape((28, 28)))
                 _data_set_[k] = _data_temp_
@@ -66,17 +72,74 @@ def construct_data_set():
                 k += 1
     print("[Function Message]In construct_data_set(): Constructed ", k, " samples for testing.\n")
 
-    np.savetxt(PROJECT_DIR + "/mnist_data_in_bit.data", _data_set_)
-    np.savetxt(PROJECT_DIR + "/mnist_label_in_bit.data", _label_set_)
+    # Save data array for next time using
+    np.save(PROJECT_DIR + "/mnist_data_binary.npy", _data_set_)
+    np.save(PROJECT_DIR + "/mnist_label_binary.npy", _label_set_)
 
     return _data_set_, _label_set_
 
 
-def classify_type(var1, var2, var3):
-    loss_set = np.zeros(10000)
-    result = np.zeros(10)
+def construct_test_set():
+    scale = 20000
+    _test_data_set_ = np.zeros((scale, 784), dtype=int)
+    _test__label_set_ = np.zeros((scale, 10), dtype=int)
+    _data_temp_ = np.zeros(784, dtype=int)
 
-    # print(var3[0], "\n")
+    # If data files already exist, just load them.
+    if os.path.isfile(PROJECT_DIR + "/mnist_testdata_binary.npy") == 1:
+        if os.path.isfile(PROJECT_DIR + "/mnist_testlabel_binary.npy") == 1:
+            batch_data = np.load(PROJECT_DIR + "/mnist_testdata_binary.npy")
+            batch_label = np.load(PROJECT_DIR + "/mnist_testlabel_binary.npy")
+            _test_data_set_ = np.reshape(batch_data, (scale, 784))
+            _test__label_set_ = np.reshape(batch_label, (scale, 10))
+            print("[Function Message]In construct_test_set(): Read samples from files for testing.\n")
+            return _test_data_set_, _test__label_set_
+
+    # Read data from MNIST
+    _test_data_set_, _test__label_set_ = mnist.test.next_batch(scale)
+
+    # Binarizing data set
+    for i in range(scale):
+        for j in range(784):
+            _data_temp_[j] = 1 if _test_data_set_[i, j] > gray else 0
+        # print(_data_temp_.reshape((28, 28)))
+        _test_data_set_[i] = _data_temp_
+
+    print("[Function Message]In construct_data_set(): Constructed ", scale, " samples for testing.\n")
+
+    # Save data array for next time using
+    np.save(PROJECT_DIR + "/mnist_testdata_binary.npy", _test_data_set_)
+    np.save(PROJECT_DIR + "/mnist_testlabel_binary.npy", _test__label_set_)
+
+    return _test_data_set_, _test__label_set_
+
+
+def print_num(var1):
+    temp = var1.reshape(784)
+    print("Here is the image of this hand-write number.")
+    for j in range(28):
+        temp_print = ''
+        for k in range(28):
+            if temp[(j * k + k)] == 1:
+                temp_print += '@'
+                # temp_print[j] = '*'
+            else:
+                temp_print += ' '
+                # temp_print[j] = ' '
+        print(temp_print)
+
+
+def print_result(var, index=0, var1=True):
+    if var1 == 1:
+        print("The original number is ", np.argmax(test_label[index]), ". The result is ", var, ".\n")
+    else:
+        print("The original number is ", np.argmax(test_label[index]), ". The result is ", var, ".")
+        print("Index of the wrong answer is ", index, ".\n")
+
+
+def classify_type(var1, var2, var3, var4):
+    loss_set = np.zeros(20000)
+    result = np.zeros(10)
 
     difference = np.tile(var1, (np.shape(var2)[0], 1)) - var2
     # print(difference[1], "\n")
@@ -84,13 +147,13 @@ def classify_type(var1, var2, var3):
     difference_square = difference ** 2
     # print(difference_square[1], "\n\n")
 
-    loss_set = difference_square.sum(axis=1) ** 0.5
+    loss_set = difference_square.sum(axis=1)
     # print(loss_set, "\n\n")
     result_index = np.argsort(loss_set)
 
-    for i in range(20):
+    for i in range(var4):
         result = result + var3[result_index[i]]
-        # print(var3[result_index[i]])
+        # print(loss_set[result_index[i]])
 
     type_index = np.argsort(result)
 
@@ -99,43 +162,64 @@ def classify_type(var1, var2, var3):
     return type_index[9]
 
 
-def construct_test_set():
-    _test_data_set_ = np.zeros((400, 784))
-    _test__label_set_ = np.zeros((400, 10))
-    _data_temp_ = np.zeros(784, dtype=int)
+def classify_type_weights(var1, var2, var3, var4):
+    loss_set = np.zeros(20000)
+    result = np.zeros(10)
 
-    if os.path.isfile(PROJECT_DIR + "/mnist_testdata_in_bit.data") == 1:
-        if os.path.isfile(PROJECT_DIR + "/mnist_testlabel_in_bit.data") == 1:
-            batch_data = np.loadtxt(PROJECT_DIR + "/mnist_testdata_in_bit.data")
-            batch_label = np.loadtxt(PROJECT_DIR + "/mnist_testlabel_in_bit.data")
-            _test_data_set_ = np.reshape(batch_data, (400, 784))
-            _test__label_set_ = np.reshape(batch_label, (400, 10))
-            print("[Function Message]In construct_test_set(): Read samples from files for testing.\n")
-            return _test_data_set_, _test__label_set_
+    difference = np.tile(var1, (np.shape(var2)[0], 1)) - var2
+    # print(difference[1], "\n")
 
-    _test_data_set_, _test__label_set_ = mnist.test.next_batch(400)
-    for i in range(400):
-        for j in range(784):
-            _data_temp_[j] = 1 if _test_data_set_[i, j] > 0.8 else 0
-        # print(_data_temp_.reshape((28, 28)))
-        _test_data_set_[i] = _data_temp_
+    difference_square = difference ** 2
+    # print(difference_square[1], "\n\n")
 
-    np.savetxt(PROJECT_DIR + "/mnist_testdata_in_bit.data", _test_data_set_)
-    np.savetxt(PROJECT_DIR + "/mnist_testlabel_in_bit.data", _test__label_set_)
+    loss_set = difference_square.sum(axis=1)
+    # print(loss_set, "\n\n")
+    result_index = np.argsort(loss_set)
 
-    return _test_data_set_, _test__label_set_
+    for i in range(var4):
+        result = result + var3[result_index[i]] / np.exp(loss_set[result_index[i]])
+        # print(var3[result_index[i]])
+
+    type_index = np.argsort(result)
+
+    # print(result, loss_set[result_index[19]], type_index[9])
+    return type_index[9]
 
 
 data_set, label_set = construct_data_set()
 test_data, test_label = construct_test_set()
 
+np.set_printoptions(linewidth=120)
+
+f = open(PROJECT_DIR + '/result.data', 'a+')
+
+weight_accuracy = 0
 accuracy = 0
 
-for i in range(400):
-    result = classify_type(test_data[i], data_set, label_set)
-    if np.argmax(test_label[i]) == result:
-        # print(np.argmax(test_label[i]), classify_type(test_data[i], data_set, label_set))
-        print("The original number is ", np.argmax(test_label[i]), ". The result is ", result, ".\n")
+# ------------------------------Calculate Code 1----------------------------------------
+
+# f.write("Result of classify_type_weights function:\n")
+#
+# for j in range(test_count):
+#     result = classify_type_weights(test_data[j], data_set, label_set, k)
+#     if np.argmax(test_label[j]) == result:
+#         weight_accuracy += 1
+#
+# print("The weight accuracy rate is ", weight_accuracy/test_count, ".K-value is ", k, ".\n")
+# f.write("%f\n" % (weight_accuracy/test_count))
+
+# ------------------------------Calculate Code 2----------------------------------------
+
+f.write("Result of classify_type function:\n")
+
+for j in range(test_count):
+    result = classify_type(test_data[j], data_set, label_set, k)
+    if np.argmax(test_label[j]) == result:
         accuracy += 1
 
-print("The accuracy rate is ", accuracy/400, ".\n")
+print("The accuracy rate is ", accuracy/test_count, ".K-value is ", k, ".\n")
+f.write("%f\n" % (accuracy / test_count))
+
+# -------------------------------------End-----------------------------------------------
+
+f.close()
